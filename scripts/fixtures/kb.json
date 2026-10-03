@@ -1,0 +1,5 @@
+[
+  {"id":"kb-food","question":"附近有什麼好吃的？","aliases":"午餐去哪吃？附近有便當店嗎？","answer":"附近餐廳大多在中正路 490–540 號一帶，走路約 8–10 分鐘。","category":"交通停車","needsHuman":false,"askedCount":0},
+  {"id":"kb-order","question":"可以幫忙代訂便當或餐點嗎？","aliases":"可以幫我們訂午餐嗎？代訂","answer":"光合不提供代訂，但很多店家滿額可外送。","category":"一樓場地","needsHuman":false,"askedCount":0},
+  {"id":"kb-long","question":"長期固定租用可以算便宜一點嗎？","aliases":"長期租、便宜一點","answer":"長期固定租用可以另外規劃方案，我請負責同仁跟您聯繫。","category":"價格","needsHuman":true,"askedCount":0}
+]
