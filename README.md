@@ -22,6 +22,10 @@
 
 > 注意：在 LINE 官方帳號後台聊天室打的字**不會**經過 webhook，所以無法用「#接手」這類指令暫停 AI，要到 Notion 改狀態。
 
+## 兩種模式
+- **記錄模式（目前）**：沒填 `ANTHROPIC_API_KEY`（或 `AI_MODE=off`）時，Bot 不回覆客人，只把每則訊息記到 Notion「LINE 客人」並標「待真人回覆」，由同仁在 LINE 後台人工回。
+- **AI 模式**：填入 `ANTHROPIC_API_KEY` 並重新部署，AI 開始依知識庫自動回覆。
+
 ## 與官網 webhook 串接
 LINE 官方帳號只能設一個 Webhook URL。光合的帳號原本接的是官網 `sunlighthub-web.vercel.app/api/line/webhook`，
 所以現在 Webhook URL 改填這支 AI 客服，由它把每則訊息原封不動（含簽章）轉一份給官網，官網原本的功能照常運作。

@@ -57,6 +57,12 @@ export async function handleEvent(event: any): Promise<void> {
     return;
   }
 
+  // 記錄模式（AI 未開啟）：不回覆，標記待真人回覆，由同仁在 LINE 後台人工回
+  if (!config.aiEnabled()) {
+    await saveCustomer(customer, { status: "待真人回覆" });
+    return;
+  }
+
   await line.showLoading(userId).catch(() => {});
 
   try {

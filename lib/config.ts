@@ -21,6 +21,9 @@ export const config = {
 
   // Claude API
   anthropicKey: () => env("ANTHROPIC_API_KEY"),
+  // AI 自動回覆開關：沒填 ANTHROPIC_API_KEY，或 AI_MODE=off → 只記錄到 Notion，不回覆客人（人工回）
+  aiEnabled: () =>
+    process.env.AI_MODE !== "off" && (!!process.env.ANTHROPIC_API_KEY || process.env.MOCK_AI === "1"),
   anthropicModel: () => env("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
 
   // 對外連結（AI 講到價格、預約、地圖時附上）
