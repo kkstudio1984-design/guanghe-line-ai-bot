@@ -27,7 +27,8 @@ export async function handleEvent(event: any): Promise<void> {
   if (msg.type !== "text") {
     const label = { image: "圖片", file: "檔案", sticker: "貼圖", video: "影片", audio: "語音", location: "位置" }[msg.type as string] ?? msg.type;
     appendHistory(customer, "客", `［${label}］`);
-    if (msg.type === "sticker") {
+    // 貼圖不用處理；有串接官網時，圖片／檔案交給官網那支（例如收據記帳）
+    if (msg.type === "sticker" || config.legacyHandlesMedia()) {
       await saveCustomer(customer, {});
       return;
     }
@@ -69,8 +70,13 @@ export async function handleEvent(event: any): Promise<void> {
       text,
     });
 
-    await line.reply(event.replyToken, d.messages);
-    d.messages.forEach((m) => appendHistory(customer, "光合", m));
+    const sent = await line.reply(event.replyToken, d.messages);
+    if (sent) {
+      d.messages.forEach((m) => appendHistory(customer, "光合", m));
+    } else {
+      // reply token 已被用掉（多半是官網 webhook 先回了），AI 這則就不送
+      appendHistory(customer, "光合", `（AI 未送出，可能已由官網系統回覆：${d.messages.join(" / ")}）`);
+    }
 
     const used = entries.filter((e) => d.used_entry_ids.includes(e.id));
     await Promise.all(used.map((e) => bumpAskedCount(e).catch((err) => console.error(err))));

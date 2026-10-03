@@ -22,6 +22,13 @@
 
 > 注意：在 LINE 官方帳號後台聊天室打的字**不會**經過 webhook，所以無法用「#接手」這類指令暫停 AI，要到 Notion 改狀態。
 
+## 與官網 webhook 串接
+LINE 官方帳號只能設一個 Webhook URL。光合的帳號原本接的是官網 `sunlighthub-web.vercel.app/api/line/webhook`，
+所以現在 Webhook URL 改填這支 AI 客服，由它把每則訊息原封不動（含簽章）轉一份給官網，官網原本的功能照常運作。
+- 圖片、檔案交給官網處理，AI 只記錄。
+- 如果官網那支也會回覆文字訊息，同一則只有先回的那支能送出（LINE 的 reply token 只能用一次），
+  AI 沒送出的會在 Notion「最近對話」標註「AI 未送出」。看到這種情況，要決定哪些字給官網、哪些給 AI。
+
 ## 部署步驟（約 30 分鐘）
 
 ### 1. LINE Developers

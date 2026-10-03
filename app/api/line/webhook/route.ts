@@ -1,4 +1,4 @@
-import { verifySignature } from "@/lib/line";
+import { verifySignature, forwardToLegacy } from "@/lib/line";
 import { handleEvent } from "@/lib/handler";
 
 export const runtime = "nodejs";
@@ -8,17 +8,19 @@ export const maxDuration = 30; // AI 回覆需要幾秒，給足時間
 // LINE Webhook URL：https://你的網域/api/line/webhook
 export async function POST(request: Request) {
   const raw = await request.text();
-  if (!verifySignature(raw, request.headers.get("x-line-signature"))) {
+  const signature = request.headers.get("x-line-signature");
+  if (!verifySignature(raw, signature)) {
     return new Response("invalid signature", { status: 401 });
   }
 
   const body = JSON.parse(raw);
   const events: any[] = body.events ?? [];
 
-  // 一則一則處理；單一事件出錯不影響其他事件
-  await Promise.all(
-    events.map((e) => handleEvent(e).catch((err) => console.error("處理事件失敗", err))),
-  );
+  // 同時做兩件事：轉一份給官網原本的 webhook、AI 客服處理
+  await Promise.all([
+    forwardToLegacy(raw, signature!),
+    ...events.map((e) => handleEvent(e).catch((err) => console.error("處理事件失敗", err))),
+  ]);
 
   return new Response("ok");
 }

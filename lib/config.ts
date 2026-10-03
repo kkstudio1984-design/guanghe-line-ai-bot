@@ -42,6 +42,12 @@ export const config = {
       "一樓場地,價格方案,怎麼預約,交通停車,美食地圖,找真人,時段,無障礙,設備,工位")
       .split(",").map((s) => s.trim()).filter(Boolean),
 
+  // 串接：原本的 webhook（官網 sunlighthub-web）。每則 LINE 事件都原封不動轉一份過去，讓官網原本的功能照常運作。
+  legacyWebhookUrl: () => process.env.LEGACY_WEBHOOK_URL ?? "",
+  // 圖片、檔案等非文字訊息交給原本的 webhook 處理（例如收據記帳），AI 客服只記錄、不轉真人。預設：有串接就開
+  legacyHandlesMedia: () =>
+    (process.env.LEGACY_HANDLES_MEDIA ?? (process.env.LEGACY_WEBHOOK_URL ? "1" : "0")) === "1",
+
   // 只記錄、不打 LINE API（本機測試用）
   dryRun: () => process.env.DRY_RUN === "1",
   // 不呼叫 Claude，用假回覆（本機測試用）

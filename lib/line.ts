@@ -15,10 +15,31 @@ export function verifySignature(rawBody: string, signature: string | null): bool
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+/** 把原始請求轉給舊的 webhook（簽章原樣帶過去，對方照常能驗證） */
+export async function forwardToLegacy(rawBody: string, signature: string) {
+  const url = config.legacyWebhookUrl();
+  if (!url) return;
+  if (config.dryRun()) {
+    console.log(`[DRY_RUN] 轉送給舊 webhook ${url}`);
+    return;
+  }
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-line-signature": signature },
+      body: rawBody,
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) console.error("舊 webhook 回應異常", res.status, await res.text());
+  } catch (err) {
+    console.error("轉送舊 webhook 失敗", err);
+  }
+}
+
 async function call(path: string, body?: unknown, method = "POST") {
   if (config.dryRun()) {
     console.log(`[DRY_RUN] LINE ${method} ${path}`, body ? JSON.stringify(body) : "");
-    return null;
+    return {};
   }
   const res = await fetch(`${API}${path}`, {
     method,
@@ -36,15 +57,17 @@ async function call(path: string, body?: unknown, method = "POST") {
   return text ? JSON.parse(text) : {};
 }
 
-/** 回覆訊息（用 reply token，不算訊息則數） */
-export async function reply(replyToken: string, texts: string[]) {
+/** 回覆訊息（用 reply token，不算訊息則數）。回傳是否送出成功；
+ *  失敗通常代表這則已被其他系統（例如官網 webhook）回覆過，reply token 只能用一次。 */
+export async function reply(replyToken: string, texts: string[]): Promise<boolean> {
   const messages = texts
     .map((t) => t.trim())
     .filter(Boolean)
     .slice(0, 5)
     .map((text) => ({ type: "text", text: text.slice(0, 5000) }));
-  if (messages.length === 0) return;
-  await call("/message/reply", { replyToken, messages });
+  if (messages.length === 0) return true;
+  const res = await call("/message/reply", { replyToken, messages });
+  return res !== null;
 }
 
 /** 主動推播（會算訊息則數，只用在通知同仁） */
